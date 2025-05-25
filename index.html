@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ライフプランシミュレーター</title>
+  <style>
+    body { font-family: "Yu Gothic", Meiryo, sans-serif; background: #f7fafc; color: #233; max-width: 1400px; margin: 0 auto; padding: 24px;}
+    h1 { text-align: center; color: #2779bd; margin-bottom: 28px; }
+    h2 { color: #3687c3; font-size: 1.08em; margin: 18px 0 8px 0; border-left: 5px solid #b0dbff; padding-left: 10px; }
+    h3 { color:#227; font-size: 1.03em; margin: 9px 0 7px 0;}
+    form { background: #fff; border-radius: 18px; box-shadow: 0 2px 14px #bdd7ff2b; padding: 32px 20px 22px 20px; margin-bottom: 28px; }
+    .form-grid { display: flex; gap: 44px; flex-wrap: wrap;}
+    .form-col { flex:1; min-width:0; padding: 6px 0; box-sizing: border-box; }
+    .input-field { box-sizing: border-box; }
+    .form-section {margin-bottom:25px;}
+    .section-desc { font-size:0.97em; color:#4776b7; margin:0 0 13px 2px;}
+    .input-block { margin-bottom: 22px; }
+    .input-label { font-weight: 600; font-size: 1.01em; letter-spacing: 0.03em; color: #25566d; display: block; margin-bottom: 7px;}
+    .input-field { width: 100%; min-width: 80px; font-size: 1em; padding: 8px 12px; border: 1.5px solid #b6dcff; border-radius: 9px; box-shadow: 0 1.5px 7px #c5e6fd1c; color: #244; background: #f5f9fc; font-family: inherit; outline: none; transition: border-color 0.18s;}
+    .input-field:focus { border-color: #3687c3; background: #eef6fb; }
+    .input-desc { font-size: 0.98em; color: #60738c; background: #f3f6fb; border-radius: 7px; padding: 6px 13px; margin-top: 5px; display: block; line-height: 1.6;}
+    .input-radio-group { display: flex; gap:16px; margin:6px 0;}
+    .input-radio-group label { font-weight: 500; font-size: 1.01em; color:#2352ad;}
+    #spouse-section, #marriageAge-block { display: none; }
+    #house-buy-section, #house-rent-section, #house-type-section, #house-age-section { display: none; }
+    .subsection-label { margin:8px 0 4px 0; font-size:0.98em; color:#2872b9; font-weight:bold;}
+    .input-group2 { display: flex; gap: 13px; }
+    .input-group2 > * { flex:1;}
+    button[type="submit"] { background: linear-gradient(90deg,#56b7ee 0%,#3687c3 80%); color: #fff; border: none; border-radius: 11px; padding: 15px 28px; font-size: 1.16em; font-weight: bold; margin: 30px auto 8px; display: block; box-shadow: 0 2.5px 10px #b1e3ff18; letter-spacing: 0.09em; transition: background 0.18s, transform 0.16s;}
+    button[type="submit"]:hover { background: linear-gradient(90deg,#3687c3 0%,#56b7ee 100%); transform: scale(1.03);}
+    .result-section { background: #fff; border-radius: 13px; box-shadow: 0 0 8px #e2e2e2; padding: 17px; margin-bottom: 22px;}
+    .chart-container { position: relative; width: 100%; min-width: 320px; max-width: 100%; height: 400px; }
+    #chart { width: 100% !important; height: 390px !important; }
+    .pie-chart-unit-switch {
+      display: flex; justify-content: flex-end; gap: 12px; margin: 0 0 8px 0; align-items:center;
+    }
+    .pie-chart-unit-switch label {
+      font-size: 1em; color: #317399; font-weight: 600; margin-right: 0;
+    }
+    .pie-chart-unit-switch button {
+      background: #e7f0f9; border:none; border-radius:7px; padding: 5px 15px; font-size: 0.97em;
+      color:#2779bd; cursor:pointer; transition:background 0.15s;
+    }
+    .pie-chart-unit-switch button.active, .pie-chart-unit-switch button:focus { background:#bee0f7; color:#233; outline:none;}
+    .pie-chart-container { display: flex; flex-wrap: wrap; gap: 28px; margin: 8px 0 8px 0; justify-content: flex-start;}
+    .pie-chart-block { min-width: 0; width: 340px; max-width: 340px; background: #f8fbfd; border-radius: 13px; box-shadow: 0 2px 12px #e2e7f133; padding: 12px 5px 8px 5px; text-align: center;}
+    .pie-chart-block h3 { font-size: 1.08em; margin-bottom: 6px; color: #25566d; }
+    .pie-chart-totals { margin: 15px 0 6px 0; font-size: 1.01em; font-weight: bold; color: #166599; line-height: 1.7; letter-spacing: 0.05em;}
+    .pie-label { font-size: 0.93em; font-weight: 500; }
+    .pie-chart-label { font-size: 1em !important; font-weight: bold !important; }
+    .stage-age { margin-bottom: 4px; }
+    .events { color: #fff; background: #5ea3e2; border-radius: 7px; font-size: 0.88em; padding: 2px 9px; margin-left: 7px; box-shadow: 0 1px 6px #6fbef920;}
+    .mini-table { font-size: 0.99em; }
+    .advice { background: #eaf7fe; border-left: 5px solid #50b2e3; padding: 12px 13px; border-radius: 7px; margin-top: 16px; color: #215067; font-weight: 500; font-size: 1.01em; box-shadow: 0 2px 11px #b5e8ff16;}
+    table { border-collapse: collapse; width: 100%; margin-top: 18px;}
+    th, td { border: 1px solid #b0b0b0; padding: 7px 5px; text-align: right;}
+    th { background: #f0f6ff; font-weight: 600;}
+    th.em, td.em { color: #1860b3; background: #d7edff; font-weight: bold; font-size:1.07em;}
+    th.asset, td.asset { color: #fff; background: #3180c4; font-weight: bold; font-size:1.12em;}
+    .info-comment { background: #f6fafd; border-left: 4px solid #b2dbfa; border-radius: 6px; font-size:0.98em; color: #317399; margin:18px 0 13px 0; padding:10px 15px;}
+    @media (max-width: 1100px) {
+      .pie-chart-container { flex-direction: column; gap: 18px; }
+      .pie-chart-block { width: 100%; max-width: 95vw; }
+    }
+    @media (max-width: 650px) {
+      body { padding: 2vw; }
+      .form-grid { gap:0; }
+      .input-block { margin-bottom: 17px; }
+      .chart-container { height: 240px;}
+      #chart { height: 230px !important;}
+      .pie-chart-block { padding:10px 3px 7px 3px;}
+    }
+  </style>
+</head>
+<body>
+  <h1>ライフプランシミュレーター</h1>
+  <form id="lifeplan-form" autocomplete="off">
+    <div class="form-grid">
+      <!-- 本人・家族情報 -->
+      <div class="form-col">
+        <h2>本人情報</h2>
+        <div class="section-desc">現在の年齢・収入・昇給率・退職年齢などを入力してください。</div>
+        <div class="input-block">
+          <label class="input-label" for="age">現在の年齢 <span style="color:red">*</span></label>
+          <input type="number" class="input-field" id="age" min="18" max="65" value="27" required />
+          <span class="input-desc">あなたの現在の年齢を入力してください。<br>例：30歳</span>
+        </div>
+        <div class="input-block">
+          <label class="input-label" for="income">あなたの年間手取り収入 <span style="color:red">*</span></label>
+          <input type="number" class="input-field" id="income" min="50" max="2000" value="450" required />
+          <span class="input-desc">1年間で実際に受け取る収入（手取り）を入力。<br>例：30歳正社員平均約350万円</span>
+        </div>
+        <div class="input-block">
+          <label class="input-label" for="salaryUp">あなたの年間昇給率</label>
+          <input type="number" class="input-field" id="salaryUp" min="0" max="10" value="2" step="0.1"/>
+          <span class="input-desc">収入が毎年どれくらい増えるか。日本平均1.8～2.0%</span>
+        </div>
+        <div class="input-block">
+          <label class="input-label" for="retireAge">引退年齢</label>
+          <input type="number" class="input-field" id="retireAge" min="50" max="100" value="60" />
+          <span class="input-desc">仕事を引退する年齢。日本の定年は60～65歳が多い</span>
+        </div>
+        <div class="input-block">
+          <label class="input-label" for="retirementPay">退職金（受取時）</label>
+          <input type="number" class="input-field" id="retirementPay" min="0" max="10000" value="1000" />
+          <span class="input-desc">退職時に一括で受け取る金額。平均1000～2000万円</span>
+        </div>
+        <div class="input-block">
+          <label class="input-label" for="pension">年金（老後の年間受取額/夫婦合計）</label>
+          <input type="number" class="input-field" id="pension" min="0" max="400" value="200" />
+          <span class="input-desc">夫婦2人で受け取る年間公的年金の総額（国民年金＋厚生年金など）</span>
+        </div>
+        <h2>家族情報</h2>
+        <div class="section-desc">配偶者の有無や家族構成、子供・教育費を入力してください。</div>
+        <div class="input-block">
+          <label class="input-label" for="hasSpouse">配偶者の有無</label>
+          <select class="input-field" id="hasSpouse">
+            <option value="yes">いる/予定</option>
+            <option value="no">いない</option>
+          </select>
+          <span class="input-desc">結婚予定がある場合も「いる/予定」を選択してください。</span>
+        </div>
+        <div id="marriageAge-block" class="input-block">
+          <label class="input-label" for="marriageAge">結婚予定年齢</label>
+          <input type="number" class="input-field" id="marriageAge" min="18" max="70" value="30" />
+          <span class="input-desc">結婚する年齢。全国平均：男性31歳、女性29歳</span>
+        </div>
+        <div id="spouse-section">
+          <div class="input-block">
+            <label class="input-label" for="spouseIncomeBefore">配偶者の年間手取り収入（育休前）</label>
+            <input type="number" class="input-field" id="spouseIncomeBefore" min="0" max="2000" value="300" />
+            <span class="input-desc">結婚～育休前の配偶者の手取り年収。<br>日本女性平均：約250～300万円</span>
+          </div>
+          <div class="input-block">
+            <label class="input-label" for="spouseIncomeLeave">配偶者の年間手取り収入（育休/子育て期間中）</label>
+            <input type="number" class="input-field" id="spouseIncomeLeave" min="0" max="2000" value="100" />
+            <span class="input-desc">育休・子育て中の配偶者収入（減少するケースが多い）</span>
+          </div>
+          <div class="input-block">
+            <label class="input-label" for="spouseIncomeAfter">配偶者の年間手取り収入（復帰後）</label>
+            <input type="number" class="input-field" id="spouseIncomeAfter" min="0" max="2000" value="320" />
+            <span class="input-desc">育休後、復帰した場合の手取り年収。平均：300万円以上</span>
+          </div>
+          <div class="input-block">
+            <label class="input-label" for="birthAge">出産予定年齢</label>
+            <input type="number" class="input-field" id="birthAge" min="18" max="60" value="32" />
+            <span class="input-desc">最初の子どもを出産する年齢。全国平均初産年齢は30.9歳</span>
+          </div>
+          <div class="input-block">
+            <div class="input-group2">
+              <div>
+                <label class="input-label" for="spouseLeaveStart">配偶者育休開始年齢</label>
+                <input type="number" class="input-field" id="spouseLeaveStart" min="18" max="80" value="32" />
+              </div>
+              <div>
+                <label class="input-label" for="spouseLeaveEnd">配偶者育休終了年齢</label>
+                <input type="number" class="input-field" id="spouseLeaveEnd" min="18" max="80" value="34" />
+              </div>
+            </div>
+            <span class="input-desc">育休期間の目安：出産後1～2年。復帰後は収入が元に戻る場合も</span>
+          </div>
+          <div class="input-block">
+            <label class="input-label" for="spouseSalaryUp">配偶者の年間昇給率</label>
+            <input type="number" class="input-field" id="spouseSalaryUp" min="0" max="10" value="0" step="0.1"/>
+            <span class="input-desc">配偶者の収入の年ごとの増加率（％）</span>
+          </div>
+        </div>
+        <div class="input-block">
+          <label class="input-label" for="numChildren">子供の人数</label>
+          <input type="number" class="input-field" id="numChildren" min="0" max="5" value="2" />
+          <span class="input-desc">育てる予定の子供の人数。日本平均は約1.96人</span>
+        </div>
+        <div class="input-block">
+          <label class="input-label" for="schoolType">教育区分</label>
+          <select class="input-field" id="schoolType">
+            <option value="public">公立</option>
+            <option value="private">私立</option>
+          </select>
+          <span class="input-desc">子供が通う学校の種類。私立は費用が高め</span>
+        </div>
+        <div class="input-block">
+          <label class="input-label" for="childCost">子供費用（1人/年）</label>
+          <input type="number" class="input-field" id="childCost" min="0" max="300" value="60" />
+          <span class="input-desc" id="childCostLabel">子ども1人につき1年間にかかる費用（公立:50-70万/私立:100万以上）</span>
+        </div>
+        <div class="input-block">
+          <label class="input-label" for="collegeCost">大学進学費（1人分総額）</label>
+          <input type="number" class="input-field" id="collegeCost" min="0" max="1000" value="500" />
+          <span class="input-desc" id="collegeCostLabel">大学4年間の学費（国立:500万, 私立:900万が目安）</span>
+        </div>
+      </div>
+      <!-- 住居・生活・資産・投資 -->
+      <div class="form-col">
+        <h2>住居・生活</h2>
+        <div class="section-desc">独身～同棲・結婚後、住宅購入・家賃や生活費を入力してください。</div>
+        <div class="subsection-label">【独身時代】</div>
+        <div class="input-radio-group">
+          <label><input type="radio" name="singleLivingType" value="rent" checked>家賃</label>
+          <label><input type="radio" name="singleLivingType" value="loan">住宅ローン</label>
+        </div>
+        <div class="input-block" id="singleRentBlock">
+          <label class="input-label" for="singleRent">家賃（月額）</label>
+          <input type="number" class="input-field" id="singleRent" min="0" max="50" value="7" />
+          <span class="input-desc">独身時代の家賃。全国平均：1人暮らし約6.1万円/月</span>
+        </div>
+        <div class="input-block" id="singleLoanBlock" style="display:none">
+          <label class="input-label" for="singleLoan">住宅ローン（月額）</label>
+          <input type="number" class="input-field" id="singleLoan" min="0" max="50" value="0" />
+          <span class="input-desc">独身時代で持ち家の場合の住宅ローン支払額</span>
+        </div>
+        <div class="input-block">
+          <label class="input-label" for="singleLivingCost">生活費（独身/年額）</label>
+          <input type="number" class="input-field" id="singleLivingCost" min="0" max="400" value="120" />
+          <span class="input-desc">独身時代の生活費（光熱費・通信費等も合算）</span>
+        </div>
+
+        <div class="subsection-label">【同棲・結婚後（子どもなし）】</div>
+        <div class="input-radio-group">
+          <label><input type="radio" name="marriedLivingType" value="rent" checked>家賃</label>
+          <label><input type="radio" name="marriedLivingType" value="loan">住宅ローン</label>
+        </div>
+        <div class="input-block" id="marriedRentBlock">
+          <label class="input-label" for="marriedRent">家賃（月額）</label>
+          <input type="number" class="input-field" id="marriedRent" min="0" max="100" value="10" />
+          <span class="input-desc">同棲・結婚後の家賃。全国平均：2人世帯約8.1万円/月</span>
+        </div>
+        <div class="input-block" id="marriedLoanBlock" style="display:none">
+          <label class="input-label" for="marriedLoan">住宅ローン（月額）</label>
+          <input type="number" class="input-field" id="marriedLoan" min="0" max="100" value="8" />
+          <span class="input-desc">同棲・結婚後の持ち家の場合の住宅ローン支払額</span>
+        </div>
+        <div class="input-block">
+          <label class="input-label" for="marriedLivingCost">生活費（同棲・結婚後/年額）</label>
+          <input type="number" class="input-field" id="marriedLivingCost" min="0" max="400" value="180" />
+          <span class="input-desc">同棲・結婚後（子どもがいない時期）の生活費（光熱・通信・趣味・交際費なども含めてください）</span>
+        </div>
+        <div class="input-block">
+          <label class="input-label" for="cohabitAge">同棲開始年齢</label>
+          <input type="number" class="input-field" id="cohabitAge" min="18" max="100" value="31" />
+          <span class="input-desc">同棲・結婚生活を始める年齢（例：30～35歳が多い）</span>
+        </div>
+        <div class="subsection-label">【子ども有り】</div>
+        <div class="input-block">
+          <label class="input-label" for="childLivingCost">生活費（子ども有り/年額）</label>
+          <input type="number" class="input-field" id="childLivingCost" min="0" max="500" value="240" />
+          <span class="input-desc">子どもがいる時期の生活費（年額、家族合計、光熱・通信・趣味・交際費なども含めてください）</span>
+        </div>
+        <div class="input-block">
+          <label class="input-label" for="houseType">住宅の選択</label>
+          <select class="input-field" id="houseType">
+            <option value="rent">賃貸を継続</option>
+            <option value="buy">住宅購入</option>
+          </select>
+          <span class="input-desc">将来的に住宅購入を検討する場合「住宅購入」を選択</span>
+        </div>
+        <div class="input-block" id="house-age-section">
+          <label class="input-label" for="houseAge">住宅購入/賃貸継続年齢</label>
+          <input type="number" class="input-field" id="houseAge" min="18" max="100" value="40" />
+          <span class="input-desc">住宅を購入または賃貸継続を決定する年齢。全国平均住宅購入年齢：約40歳</span>
+        </div>
+        <div class="input-block" id="house-buy-section" style="display:none;">
+          <label class="input-label" for="houseCost">住宅購入費用（頭金）</label>
+          <input type="number" class="input-field" id="houseCost" min="0" max="10000" value="0" />
+          <span class="input-desc">住宅購入時に必要な頭金。全国平均：約1,200万円</span>
+        </div>
+
+        <h2 style="margin-top:30px;border-left: 5px solid #ffe4a8; padding-left:10px;color:#e28d0a;">【老後】</h2>
+        <div class="section-desc">引退後（年金生活開始後）の生活費・医療費を入力してください。</div>
+        <div class="input-block">
+          <label class="input-label" for="retiredLivingCost">生活費（老後/年額）</label>
+          <input type="number" class="input-field" id="retiredLivingCost" min="0" max="400" value="160" />
+          <span class="input-desc">老後（退職後）の生活費（夫婦2人世帯の平均目安は22万円/月＝264万円/年 ※総務省調査）</span>
+        </div>
+        <div class="input-block">
+          <label class="input-label" for="retiredMedicalCost">医療費（老後/年額）</label>
+          <input type="number" class="input-field" id="retiredMedicalCost" min="0" max="100" value="30" />
+          <span class="input-desc">老後は医療費・介護費用も考慮（厚労省高齢者医療費調査より）</span>
+        </div>
+        <h2>資産・投資</h2>
+        <div class="section-desc">現在の資産や毎年の投資額・利回りを入力してください。</div>
+        <div class="input-block">
+          <label class="input-label" for="startAsset">開始時資産</label>
+          <input type="number" class="input-field" id="startAsset" min="0" max="10000" value="800" />
+          <span class="input-desc">預金・投資信託などの合計額（例：30歳平均 250～400万円）</span>
+        </div>
+        <div class="input-block">
+          <label class="input-label" for="investRate">投資へ回す割合（%）</label>
+          <input type="number" class="input-field" id="investRate" min="0" max="100" value="70" />
+          <span class="input-desc">毎年の余剰金から投資に回す割合（20～50%が多い）</span>
+        </div>
+        <div class="input-block">
+          <label class="input-label" for="investYield">投資年利</label>
+          <input type="number" class="input-field" id="investYield" min="0" max="20" value="3" step="0.1" />
+          <span class="input-desc">年間平均利回り（積立NISA等は3～7%が多い）</span>
+        </div>
+        <div class="input-block">
+          <label class="input-label" for="endAge">シミュレーション終了年齢</label>
+          <input type="number" class="input-field" id="endAge" min="40" max="100" value="100" />
+          <span class="input-desc">老後まで想定したい場合は70～90歳を目安に</span>
+        </div>
+      </div>
+    </div>
+    <button type="submit">シミュレーション開始</button>
+  </form>
+
+  <div id="result" style="display:none">
+    <div class="result-section">
+      <h2>シミュレーション結果グラフ</h2>
+      <div class="chart-container">
+        <canvas id="chart"></canvas>
+      </div>
+      <div id="chartEvents" style="margin-top: 10px; font-size: 1em;"></div>
+      <div class="mini-table">
+        <table style="margin-top:16px;">
+          <tr>
+            <th>年平均生活費</th>
+            <th>年平均子供費用</th>
+            <th>年平均累計支出</th>
+            <th>年平均収入</th>
+            <th>配偶者収入平均</th>
+            <th>最終投資資産</th>
+          </tr>
+          <tr>
+            <td id="avgLiving"></td>
+            <td id="avgChild"></td>
+            <td id="avgTotal"></td>
+            <td id="avgIncome"></td>
+            <td id="avgSpouseIncome"></td>
+            <td id="finalInvest"></td>
+          </tr>
+        </table>
+      </div>
+      <div id="advice" class="advice"></div>
+      <div id="stageSummary" class="info-comment"></div>
+    </div>
+    <div class="result-section">
+      <h2>ライフステージ別 支出・貯蓄・投資割合
+        <span class="pie-chart-unit-switch">
+          <label>単位:</label>
+          <button id="pieUnitYear" class="active" type="button">年間</button>
+          <button id="pieUnitMonth" type="button">月間</button>
+        </span>
+      </h2>
+      <div class="pie-chart-container">
+        <div class="pie-chart-block">
+          <h3>独身時代</h3>
+          <div class="stage-age" id="pie-single-age"></div>
+          <canvas id="pie-single" width="340" height="340"></canvas>
+          <div id="pieSingleTotals" class="pie-chart-totals"></div>
+        </div>
+        <div class="pie-chart-block">
+          <h3>同棲時代（子どもなし）</h3>
+          <div class="stage-age" id="pie-couple-age"></div>
+          <canvas id="pie-couple" width="340" height="340"></canvas>
+          <div id="pieCoupleTotals" class="pie-chart-totals"></div>
+        </div>
+        <div class="pie-chart-block">
+          <h3>子ども有り</h3>
+          <div class="stage-age" id="pie-child-age"></div>
+          <canvas id="pie-child" width="340" height="340"></canvas>
+          <div id="pieChildTotals" class="pie-chart-totals"></div>
+        </div>
+        <div class="pie-chart-block">
+          <h3>老後</h3>
+          <div class="stage-age" id="pie-retired-age"></div>
+          <canvas id="pie-retired" width="340" height="340"></canvas>
+          <div id="pieRetiredTotals" class="pie-chart-totals"></div>
+        </div>
+      </div>
+    </div>
+    <div class="result-section">
+      <h3>年次データ</h3>
+      <div style="overflow-x:auto;">
+        <table id="resultTable">
+          <thead>
+            <tr>
+              <th>年齢</th>
+              <th>本人収入</th>
+              <th>配偶者収入</th>
+              <th>年金</th>
+              <th class="em">合計収入(万円)</th>
+              <th>家賃/ローン</th>
+              <th>住宅購入</th>
+              <th>生活費</th>
+              <th>子供費用</th>
+              <th>教育費</th>
+              <th class="em">合計支出(万円)</th>
+              <th>貯金(万円)</th>
+              <th>投資額(万円)</th>
+              <th class="asset">総資産(万円)</th>
+              <th>イベント</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@4.1.1/dist/chartjs-plugin-annotation.min.js"></script>
+  <script>
+    // 入力欄切替
+    function updateSpouseSection() {
+      var val = document.getElementById('hasSpouse').value;
+      document.getElementById('spouse-section').style.display = val === 'yes' ? 'block' : 'none';
+      document.getElementById('marriageAge-block').style.display = val === 'yes' ? 'block' : 'none';
+    }
+    document.getElementById('hasSpouse').addEventListener('change', updateSpouseSection);
+    window.addEventListener('DOMContentLoaded', updateSpouseSection);
+
+    // 教育費自動反映
+    const schoolTypeElem = document.getElementById('schoolType');
+    const childCostElem = document.getElementById('childCost');
+    const collegeCostElem = document.getElementById('collegeCost');
+    const childCostLabel = document.getElementById('childCostLabel');
+    const collegeCostLabel = document.getElementById('collegeCostLabel');
+    function updateEducationCost() {
+      if(schoolTypeElem.value === 'public') {
+        childCostElem.value = 60;
+        collegeCostElem.value = 500;
+        childCostLabel.innerHTML = "子ども1人につき1年間にかかる費用（公立:50-70万/私立:100万以上）";
+        collegeCostLabel.innerHTML = "大学4年間の学費（国立:500万, 私立:900万が目安）";
+      } else {
+        childCostElem.value = 110;
+        collegeCostElem.value = 900;
+        childCostLabel.innerHTML = "子ども1人につき1年間にかかる費用（公立:50-70万/私立:100万以上）";
+        collegeCostLabel.innerHTML = "大学4年間の学費（国立:500万, 私立:900万が目安）";
+      }
+    }
+    schoolTypeElem.addEventListener('change', updateEducationCost);
+    updateEducationCost();
+
+    // 家賃・ローン切替
+    function updateLivingType(type, isSingle) {
+      if(isSingle) {
+        document.getElementById('singleRentBlock').style.display = type === "rent" ? "" : "none";
+        document.getElementById('singleLoanBlock').style.display = type === "loan" ? "" : "none";
+      } else {
+        document.getElementById('marriedRentBlock').style.display = type === "rent" ? "" : "none";
+        document.getElementById('marriedLoanBlock').style.display = type === "loan" ? "" : "none";
+      }
+    }
+    document.getElementsByName('singleLivingType').forEach(radio => {
+      radio.addEventListener('change', function() {
+        updateLivingType(this.value, true);
+      });
+    });
+    document.getElementsByName('marriedLivingType').forEach(radio => {
+      radio.addEventListener('change', function() {
+        updateLivingType(this.value, false);
+      });
+    });
+
+    // 住宅選択に応じた項目切替
+    document.getElementById('houseType').addEventListener('change', function() {
+      let v = this.value;
+      document.getElementById('house-age-section').style.display = "block";
+      document.getElementById('house-buy-section').style.display = v === "buy" ? "block" : "none";
+    });
+    window.addEventListener('DOMContentLoaded', ()=>{
+      updateLivingType(document.querySelector('input[name="singleLivingType"]:checked').value, true);
+      updateLivingType(document.querySelector('input[name="marriedLivingType"]:checked').value, false);
+      document.getElementById('house-age-section').style.display = "block";
+      document.getElementById('house-buy-section').style.display = document.getElementById('houseType').value === "buy" ? "block" : "none";
+    });
+
+    // 円グラフ切替
+    let pieUnit = "year"; // "year" or "month"
+    document.getElementById('pieUnitYear').onclick = function(){
+      pieUnit = "year";
+      this.classList.add("active");
+      document.getElementById('pieUnitMonth').classList.remove("active");
+      if(window.pieStageData) drawAllPies();
+    };
+    document.getElementById('pieUnitMonth').onclick = function(){
+      pieUnit = "month";
+      this.classList.add("active");
+      document.getElementById('pieUnitYear').classList.remove("active");
+      if(window.pieStageData) drawAllPies();
+    };
+
+    document.getElementById('lifeplan-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      runSimulation();
+    });
+
+    function runSimulation() {
+      // --- 入力取得 ---
+      const age = +document.getElementById('age').value;
+      let income = +document.getElementById('income').value;
+      const salaryUp = +document.getElementById('salaryUp').value / 100;
+      const retireAge = +document.getElementById('retireAge').value;
+      const retirementPay = +document.getElementById('retirementPay').value;
+      const pension = +document.getElementById('pension').value;
+      const hasSpouse = document.getElementById('hasSpouse').value === 'yes';
+      const marriageAge = hasSpouse ? +document.getElementById('marriageAge').value : 120;
+      // 配偶者年収の３区分
+      const spouseIncomeBefore = hasSpouse ? +document.getElementById('spouseIncomeBefore').value : 0;
+      const spouseIncomeLeave = hasSpouse ? +document.getElementById('spouseIncomeLeave').value : 0;
+      const spouseIncomeAfter = hasSpouse ? +document.getElementById('spouseIncomeAfter').value : 0;
+      const spouseSalaryUp = hasSpouse ? +document.getElementById('spouseSalaryUp').value / 100 : 0;
+      const spouseLeaveStart = hasSpouse ? +document.getElementById('spouseLeaveStart').value : 999;
+      const spouseLeaveEnd = hasSpouse ? +document.getElementById('spouseLeaveEnd').value : 0;
+      let spouseAnnual = spouseIncomeBefore;
+      // 家族構成
+      const birthAge = hasSpouse ? +document.getElementById('birthAge').value : 999;
+      const numChildren = +document.getElementById('numChildren').value;
+      const schoolType = schoolTypeElem.value;
+      const childCost = +childCostElem.value;
+      const collegeCost = +collegeCostElem.value;
+      // 住居
+      const cohabitAge = +document.getElementById('cohabitAge').value;
+      const singleLivingType = document.querySelector('input[name="singleLivingType"]:checked').value;
+      const singleRent = singleLivingType==="rent" ? +document.getElementById('singleRent').value * 12 : 0;
+      const singleLoan = singleLivingType==="loan" ? +document.getElementById('singleLoan').value * 12 : 0;
+      const marriedLivingType = document.querySelector('input[name="marriedLivingType"]:checked').value;
+      const marriedRent = marriedLivingType==="rent" ? +document.getElementById('marriedRent').value * 12 : 0;
+      const marriedLoan = marriedLivingType==="loan" ? +document.getElementById('marriedLoan').value * 12 : 0;
+      // 住宅購入/賃貸切替
+      const houseType = document.getElementById('houseType').value;
+      const houseAge = +document.getElementById('houseAge').value;
+      const houseCost = houseType==="buy" ? +document.getElementById('houseCost').value : 0;
+      // 生活費
+      const singleLivingCost = +document.getElementById('singleLivingCost').value;
+      const marriedLivingCost = +document.getElementById('marriedLivingCost').value;
+      const childLivingCost = +document.getElementById('childLivingCost').value;
+      // 老後
+      const retiredLivingCost = +document.getElementById('retiredLivingCost').value;
+      const retiredMedicalCost = +document.getElementById('retiredMedicalCost').value;
+      // その他
+      const startAsset = +document.getElementById('startAsset').value;
+      const investRate = +document.getElementById('investRate').value / 100;
+      const investYield = +document.getElementById('investYield').value / 100;
+      const endAge = +document.getElementById('endAge').value;
+
+      // ---- 年次シミュレーション ----
+      let results = [];
+      let balance = startAsset;
+      let invest = startAsset;
+      let spouseIncomeCurr = spouseIncomeBefore;
+      let annualIncome = income;
+      let spouseAnnualAfter = spouseIncomeAfter;
+      let spouseAnnualLeave = spouseIncomeLeave;
+      let events = [];
+      let chartLabels = [];
+      let chartData = [];
+      let incomeData = [];
+      let spendData = [];
+      let investData = [];
+      let spouseIncomeData = [];
+      let savingData = [];
+      let profitData = [];
+      let pensionData = [];
+      let retirementGiven = false;
+
+      // ステージ別集計
+      let singleStage = {income:0, spouse:0, living:0, rent:0, child:0, save:0, invest:0, years:0, startAge:null, endAge:null};
+      let coupleStage = {income:0, spouse:0, living:0, rent:0, child:0, save:0, invest:0, years:0, startAge:null, endAge:null};
+      let childStage = {income:0, spouse:0, living:0, rent:0, child:0, save:0, invest:0, years:0, startAge:null, endAge:null};
+      let retiredStage = {income:0, spouse:0, living:0, rent:0, child:0, save:0, invest:0, years:0, startAge:null, endAge:null};
+
+      // 子供の大学進学年齢
+      let univStart = birthAge + 18;
+      let univEnd = univStart + 3;
+
+      // 子供が大学卒業したら子供費用0にするため
+      let childEndAge = (numChildren>0) ? univEnd : 0;
+
+      for(let a=age; a<=endAge; a++) {
+        // ステージ判定
+        let isRetired = a > retireAge;
+        let isChildEnd = (numChildren>0) && (a > childEndAge);
+
+        // 収入
+        let yearOwnIncome = (a <= retireAge) ? Math.round(annualIncome) : 0;
+        if(a <= retireAge) annualIncome = Math.round(annualIncome * (1 + salaryUp));
+        // 配偶者年収(結婚前・育休/復帰前・復帰後)
+        let yearSpouseIncome = 0;
+        if(hasSpouse && a >= marriageAge && a <= retireAge) {
+          if(a >= spouseLeaveStart && a <= spouseLeaveEnd) {
+            yearSpouseIncome = spouseAnnualLeave;
+          } else if(a > spouseLeaveEnd) {
+            yearSpouseIncome = spouseAnnualAfter;
+            spouseAnnualAfter = Math.round(spouseAnnualAfter * (1 + spouseSalaryUp));
+          } else {
+            yearSpouseIncome = spouseAnnual;
+            spouseAnnual = Math.round(spouseAnnual * (1 + spouseSalaryUp));
+          }
+        }
+        // 家賃/ローン
+        let yRent = 0, yLoan = 0;
+        if(a < cohabitAge) {
+          yRent = singleRent; yLoan = singleLoan;
+        } else {
+          yRent = marriedRent; yLoan = marriedLoan;
+        }
+        // 住宅購入切替
+        if(houseType==="buy" && a >= houseAge) {
+          yRent = 0; yLoan = 0;
+        }
+        // 住宅購入費用
+        let yearHouseCost = (houseType==="buy" && a === houseAge && houseCost>0) ? houseCost : 0;
+        // 生活費
+        let yearLivingBase = 0;
+        if(isRetired){
+          yearLivingBase = retiredLivingCost + retiredMedicalCost;
+        } else if(a < cohabitAge){
+          yearLivingBase = singleLivingCost;
+        } else if(numChildren>0 && a >= birthAge && !isChildEnd){
+          yearLivingBase = childLivingCost;
+        } else {
+          yearLivingBase = marriedLivingCost;
+        }
+        // 年金
+        let yearPension = (isRetired) ? pension : 0;
+
+        // 子供費用（子供が大学卒業したら0）
+        let yearChildCost = (a >= birthAge && !isChildEnd) ? childCost * numChildren : 0;
+        // 大学進学費4年分割
+        let yearCollege = 0;
+        if (numChildren > 0 && a >= univStart && a <= univEnd) {
+          yearCollege = Math.round(collegeCost * numChildren / 4);
+        }
+        // 合計収入
+        let yearTotalIncome = yearOwnIncome + yearSpouseIncome + yearPension;
+        // 支出計算
+        let yearLiving = yRent + yLoan + yearLivingBase;
+        let yearSpend = yearLiving + yearChildCost + yearCollege + yearHouseCost;
+        // 退職金加算
+        if(a === retireAge && !retirementGiven && retirementPay > 0) {
+          yearTotalIncome += retirementPay;
+          retirementGiven = true;
+        }
+        // 貯金・投資額
+        let yearSaving = yearTotalIncome - yearSpend;
+        let toInvest = Math.max(0, yearSaving) * investRate;
+        let toSave = Math.max(0, yearSaving) * (1 - investRate);
+        invest = invest * (1 + investYield) + toInvest;
+        balance += yearSaving;
+        // ステージ割当
+        let targetStage =
+          (isRetired) ? retiredStage :
+          (a < cohabitAge) ? singleStage :
+          (numChildren>0 && a >= birthAge && !isChildEnd) ? childStage :
+          coupleStage;
+        if(targetStage.years === 0) targetStage.startAge = a;
+        targetStage.endAge = a;
+
+        targetStage.income += yearOwnIncome;
+        targetStage.spouse += yearSpouseIncome;
+        targetStage.living += yearLivingBase;
+        targetStage.rent += yRent + yLoan;
+        targetStage.child += yearChildCost + yearCollege;
+        targetStage.save += toSave;
+        targetStage.invest += toInvest;
+        targetStage.years++;
+        // イベント
+        let event = "";
+        if(hasSpouse && a === marriageAge) { event += '結婚'; events.push({year:a, text:'結婚'});}
+        if(a === cohabitAge) { event += (event ? '・' : '')+'同棲開始'; events.push({year:a, text:'同棲開始'});}
+        if(numChildren>0 && a === birthAge) { event += (event ? '・' : '')+'出産'; events.push({year:a, text:'出産'});}
+        if(numChildren>0 && a === univStart) { event += (event ? '・' : '')+'大学入学'; events.push({year:a, text:'大学入学'});}
+        if(a === houseAge && houseType==="buy" && houseCost>0) { event += (event ? '・' : '')+'住宅購入'; events.push({year:a, text:'住宅購入'});}
+        if(hasSpouse && a === spouseLeaveStart) { event += (event ? '・' : '')+'配偶者育休開始'; events.push({year:a, text:'配偶者育休開始'});}
+        if(hasSpouse && a === spouseLeaveEnd) { event += (event ? '・' : '')+'配偶者復帰'; events.push({year:a, text:'配偶者復帰'});}
+        if(a === retireAge) { event += (event ? '・' : '')+'引退'; events.push({year:a, text:'引退'});}
+        if(a === endAge) { event += (event ? '・' : '')+'シミュ終了'; }
+        // 結果格納
+        results.push({
+          age:a,
+          ownIncome: yearOwnIncome,
+          spouseIncome: yearSpouseIncome,
+          pension: yearPension,
+          totalIncome: yearTotalIncome,
+          living: yearLiving,
+          rent: yRent,
+          loan: yLoan,
+          childCost: yearChildCost,
+          college: yearCollege,
+          house: yearHouseCost,
+          invest: Math.round(invest),
+          toInvest: Math.round(toInvest),
+          toSave: Math.round(toSave),
+          saving: yearSaving,
+          spend: yearSpend,
+          balance: balance,
+          event: event
+        });
+        chartLabels.push(a+"歳");
+        chartData.push(balance);
+        incomeData.push(yearTotalIncome);
+        spendData.push(yearSpend);
+        investData.push(invest);
+        spouseIncomeData.push(yearSpouseIncome);
+        savingData.push(yearSaving);
+        pensionData.push(yearPension);
+        profitData.push(yearSaving);
+      }
+
+      document.getElementById('result').style.display = '';
+      showChart(chartLabels, chartData, incomeData, spendData, profitData, results, events);
+      showTable(results);
+
+      // イベント
+      let chartEventHtml = "";
+      events.forEach(ev=>{
+        chartEventHtml += `<span class="events">${ev.year}歳: ${ev.text}</span> `;
+      });
+      document.getElementById('chartEvents').innerHTML = chartEventHtml;
+
+      let years = endAge - age + 1, totalLiving=0, totalChild=0, totalSpend=0, totalIncome=0, totalSpIncome=0;
+      results.forEach(r=>{
+        totalLiving+=r.living; totalChild+=r.childCost; totalSpend+=r.spend; totalIncome+=r.ownIncome+r.spouseIncome; totalSpIncome+=r.spouseIncome;
+      });
+      document.getElementById('avgLiving').innerText = Math.round(totalLiving/years).toLocaleString() + "万円";
+      document.getElementById('avgChild').innerText = Math.round(totalChild/years).toLocaleString() + "万円";
+      document.getElementById('avgTotal').innerText = Math.round(totalSpend/years).toLocaleString() + "万円";
+      document.getElementById('avgIncome').innerText = Math.round(totalIncome/years).toLocaleString() + "万円";
+      document.getElementById('avgSpouseIncome').innerText = Math.round(totalSpIncome/years).toLocaleString()+"万円";
+      document.getElementById('finalInvest').innerText = Math.round(results[results.length-1].invest).toLocaleString()+"万円";
+
+      // ステージ集計
+      window.pieStageData = {singleStage, coupleStage, childStage, retiredStage};
+      drawAllPies();
+
+      // 年間資産増減コメント
+      function makeStageSummary(stage, name) {
+        if(!stage.years) return "";
+        let income = Math.round(stage.income/stage.years);
+        let spouse = Math.round(stage.spouse/stage.years);
+        let spend = Math.round((stage.living+stage.rent+stage.child)/stage.years);
+        let saving = Math.round((stage.save+stage.invest)/stage.years);
+        return `<b>${name}：</b> 平均手取り${income}万円、配偶者${spouse}万円、平均支出${spend}万円、平均資産増加${saving}万円／年`;
+      }
+      let summary = [
+        makeStageSummary(singleStage,"独身時代"),
+        makeStageSummary(coupleStage,"同棲時代（子どもなし）"),
+        makeStageSummary(childStage,"子ども有り"),
+        makeStageSummary(retiredStage,"老後")
+      ].filter(x=>x).join("<br>");
+      document.getElementById('stageSummary').innerHTML = summary ? "◆ライフステージ別の年間資産増減：<br>"+summary : "";
+      // アドバイス
+      let advice = "";
+      let last = results[results.length-1];
+      if(last.balance < 0) advice += "このままでは将来の貯蓄がマイナスです。生活費や支出、住宅費、教育費等を再検討しましょう。";
+      else if(last.balance < 1000) advice += "将来の貯蓄余裕はやや少なめです。支出を見直し、貯蓄・投資の強化を検討してください。";
+      else advice += "堅実なプランです。今後も支出管理と計画的な運用を続けましょう。";
+      document.getElementById('advice').innerHTML = "<b>アドバイス:</b> " + advice;
+    }
+
+    function showTable(results) {
+      let tbody = "";
+      results.forEach(r=>{
+        tbody += `<tr>
+          <td>${r.age}</td>
+          <td>${r.ownIncome.toLocaleString()}</td>
+          <td>${r.spouseIncome ? r.spouseIncome.toLocaleString() : '-'}</td>
+          <td>${r.pension ? r.pension.toLocaleString() : '-'}</td>
+          <td class="em">${r.totalIncome.toLocaleString()}</td>
+          <td>${(r.rent+r.loan).toLocaleString()}</td>
+          <td>${r.house ? r.house.toLocaleString() : '-'}</td>
+          <td>${r.living.toLocaleString()}</td>
+          <td>${r.childCost ? r.childCost.toLocaleString() : '-'}</td>
+          <td>${r.college ? r.college.toLocaleString() : '-'}</td>
+          <td class="em">${r.spend.toLocaleString()}</td>
+          <td>${r.toSave.toLocaleString()}</td>
+          <td>${r.toInvest.toLocaleString()}</td>
+          <td class="asset">${r.balance.toLocaleString()}</td>
+          <td>${r.event?'<span class="events">'+r.event+'</span>':''}</td>
+        </tr>`;
+      });
+      document.querySelector('#resultTable tbody').innerHTML = tbody;
+    }
+
+    let chartInstance = null;
+    function showChart(labels, balanceData, incomeData, spendData, profitData, results, events) {
+      const ctx = document.getElementById('chart').getContext('2d');
+      if(chartInstance) chartInstance.destroy();
+      const annos = {};
+      events.forEach(ev=>{
+        let idx = labels.indexOf(ev.year+"歳");
+        if(idx >= 0) {
+          annos["anno"+idx] = {
+            type: 'line',
+            xMin: idx,
+            xMax: idx,
+            borderColor: 'orange',
+            borderWidth: 2,
+            label: {
+              content: ev.text,
+              enabled: true,
+              position: 'start',
+              backgroundColor: 'orange',
+              color: '#fff',
+              font: { weight: 'bold' }
+            }
+          }
+        }
+      });
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: '総資産',
+              data: balanceData,
+              borderColor: '#337ab7',
+              backgroundColor: '#337ab7',
+              borderWidth: 3,
+              fill: false,
+              tension: 0.18,
+              yAxisID: 'y'
+            },
+            {
+              label: '年間合計収入',
+              data: incomeData,
+              borderColor: '#5cb85c',
+              backgroundColor: '#5cb85c',
+              borderWidth: 2,
+              fill: false,
+              tension: 0.13,
+              yAxisID: 'y'
+            },
+            {
+              label: '年間合計支出',
+              data: spendData,
+              borderColor: '#d9534f',
+              backgroundColor: '#d9534f',
+              borderWidth: 2,
+              fill: false,
+              tension: 0.13,
+              yAxisID: 'y'
+            },
+            {
+              label: '年間収支（収入－支出）',
+              data: profitData,
+              borderColor: '#fc8c29',
+              backgroundColor: '#fc8c29',
+              borderWidth: 2,
+              fill: false,
+              borderDash: [4, 2],
+              tension: 0.14,
+              yAxisID: 'y'
+            }
+          ]
+        },
+        options: {
+          responsive:true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: true, position: 'top' },
+            tooltip: {
+              callbacks: {
+                label: function(context){
+                  const label = context.dataset.label;
+                  return `${label}: ${context.parsed.y.toLocaleString()}万円`;
+                },
+                afterBody: function(context){
+                  let idx = context[0].dataIndex;
+                  let eventText = events.find(ev=>labels[idx].startsWith(ev.year));
+                  return eventText ? "◆イベント: "+eventText.text : "";
+                }
+              }
+            },
+            annotation: { annotations: annos },
+            datalabels: { display: false }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: '万円' }
+            }
+          }
+        },
+        plugins: [ChartDataLabels]
+      });
+    }
+
+    // --- 円グラフ ---
+    let pieCharts = {};
+    function drawAllPies() {
+      drawPie("pie-single", "pieSingleTotals", window.pieStageData.singleStage, "独身時代");
+      drawPie("pie-couple", "pieCoupleTotals", window.pieStageData.coupleStage, "同棲時代（子どもなし）");
+      drawPie("pie-child", "pieChildTotals", window.pieStageData.childStage, "子ども有り");
+      drawPie("pie-retired", "pieRetiredTotals", window.pieStageData.retiredStage, "老後");
+    }
+    function drawPie(canvasId, totalId, stage, label) {
+      // 年齢範囲をタイトル下に表示
+      let ageText = '';
+      if(stage.startAge != null && stage.endAge != null && stage.startAge <= stage.endAge) {
+        ageText = `<span style="color:#317399;font-size:1em;">${stage.startAge}歳〜${stage.endAge}歳</span>`;
+      } else {
+        ageText = `<span style="color:#888;font-size:0.96em;">（この期間はありません）</span>`;
+      }
+      let ageDivId = canvasId + "-age";
+      if(document.getElementById(ageDivId))
+        document.getElementById(ageDivId).innerHTML = ageText;
+
+      if(stage.years==0) {
+        document.getElementById(canvasId).style.display="none";
+        document.getElementById(totalId).innerHTML = "<span style='color:#888'>この期間はありません。</span>";
+        return;
+      }
+      document.getElementById(canvasId).style.display="";
+      let scale = pieUnit==="year"?1:1/12;
+
+      // 平均値を算出
+      let avgRent = stage.years ? Math.round((stage.rent * scale) / stage.years) : 0;
+      let avgLiving = stage.years ? Math.round((stage.living * scale) / stage.years) : 0;
+      let avgChild = stage.years ? Math.round((stage.child * scale) / stage.years) : 0;
+      let avgSave = stage.years ? Math.round((stage.save * scale) / stage.years) : 0;
+      let avgInvest = stage.years ? Math.round((stage.invest * scale) / stage.years) : 0;
+      // 収入も平均値で
+      let avgIncome = stage.years ? Math.round((stage.income * scale) / stage.years) : 0;
+      let avgSpouse = stage.years ? Math.round((stage.spouse * scale) / stage.years) : 0;
+
+      let pieData = [avgRent, avgLiving, avgChild, avgSave, avgInvest];
+      let labels = [
+        "家賃/ローン", "生活費", "子供費用(教育含)", "貯蓄(現金)", "投資"
+      ];
+      let labelsWithValue = labels.map((l,i)=>pieData[i]?`${l}\n${pieData[i]}万円`:'');
+      if(pieCharts[canvasId]) pieCharts[canvasId].destroy();
+      pieCharts[canvasId] = new Chart(document.getElementById(canvasId).getContext('2d'), {
+        type: 'pie',
+        data: {
+          labels: labelsWithValue,
+          datasets: [{
+            data: pieData,
+            backgroundColor: [
+              "#93c5fd", "#6ee7b7", "#fef9c3", "#fbcfe8", "#c7d2fe"
+            ]
+          }]
+        },
+        options: {
+          plugins: {
+            legend: { position: 'bottom', labels: { font: { size:13 }} },
+            tooltip: {
+              callbacks: {
+                label: function(ctx){
+                  const i = ctx.dataIndex;
+                  return `${labels[i]}：${pieData[i]}万円`;
+                }
+              }
+            },
+            datalabels: {
+              display: true,
+              formatter: function(value,ctx){
+                return value ? `${labels[ctx.dataIndex]}\n${value}万円` : '';
+              },
+              color: "#233",
+              font: { weight: 'bold', size: 13 },
+              align: "center",
+              anchor: "center",
+              padding: 2,
+              className: "pie-chart-label"
+            }
+          }
+        },
+        plugins: [ChartDataLabels]
+      });
+
+      // 合計（年単位/または月単位の平均値で表示！）
+      document.getElementById(totalId).innerHTML =
+        `<div>
+        <b>合計収入：</b>本人 ${avgIncome.toLocaleString()}万 ／ 配偶者 ${avgSpouse.toLocaleString()}万<br>
+        <b>合計支出：</b>${(avgLiving + avgRent + avgChild).toLocaleString()}万 <span style="font-size:0.97em;color:#888">(貯金・投資除く)</span><br>
+        <b>合計貯金：</b>${avgSave.toLocaleString()}万　<b>投資：</b>${avgInvest.toLocaleString()}万<br>
+        <b>増資産合計：</b>${(avgSave + avgInvest).toLocaleString()}万
+        </div>`;
+    }
+  </script>
+</body>
+</html>
